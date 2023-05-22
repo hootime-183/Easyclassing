@@ -10,7 +10,7 @@ def jiyu_opening():
         os.chdir("C:/Program Files (x86)/Mythware")
         for r, d, f in os.walk("./"):
             os.chdir(f"./{d[0]}")
-        os.system("StudentMain")
+        os.popen("StudentMain")
         os.chdir(cwd)
 
     thread = threading.Thread(target=_open)
@@ -19,7 +19,7 @@ def jiyu_opening():
 
 
 def killing(name):
-    os.system(f"taskkill /t /f /im {name} 1>nul 2>nul")
+    os.popen(f"taskkill /t /f /im {name} 1>nul 2>nul")
     print("OK")
 
 

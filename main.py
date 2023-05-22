@@ -117,7 +117,7 @@ class ControlOpenTk(tkinter.Toplevel):
         self.title("Easyclassing-打开控制")
         self.geometry("512x288")
         self.resizable(False, False)
-        self.title_label = tkinter.ttk.Label(self, text="课堂控制", font=("微软雅黑 Light", 24))
+        self.title_label = tkinter.ttk.Label(self, text="打开控制", font=("微软雅黑 Light", 24))
         self.title_label.pack()
         self.maker_label = tkinter.ttk.Label(self, text="   ", font=("Calibri Light", 12))
         self.maker_label.pack(anchor="ne")

@@ -2,6 +2,48 @@ import tkinter
 import tkinter.ttk
 import os
 import threading
+import time
+
+
+def tasklist():
+    os.popen("tasklist > tasks.txt")
+    file = open("tasks.txt", "r")
+    out = file.read()
+    file.close()
+    os.popen("del tasks.txt")
+    return out
+
+
+def first_check():
+    print(os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"))
+    if os.path.exists("C:/Program Files (x86)/Mythware"):
+        return "极域"
+    elif os.path.exists("C:/Program Files (x86)/3000soft/Red Spider") or os.path.exists("C:/Program Files (x86)/3000soft/Red Spider EC"):
+        if os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"):
+            finish = False
+            cwd = os.getcwd()
+            os.chdir("C:/Program Files (x86)/3000soft")
+
+            def _kill(_name):
+                while not finish:
+                    killing(_name)
+
+            thread = threading.Thread(target=_kill, args=("REDAgent.exe",))
+            thread.daemon = True
+            thread.start()
+            print(os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"))
+            while os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"):
+                os.rename("Red Spider", "Red Spider EC")
+                print(os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"))
+            finish = True
+            os.chdir("C:/Program Files (x86)/3000soft/Red Spider EC")
+            time.sleep(0.1)
+            os.popen("REDAgent.exe")
+
+            os.chdir(cwd)
+        return "红蜘蛛"
+    else:
+        return "其它"
 
 
 def jiyu_opening():
@@ -18,14 +60,37 @@ def jiyu_opening():
     thread.start()
 
 
+def red_agent_opening():
+    def _open():
+        cwd = os.getcwd()
+        os.chdir("C:/Program Files (x86)/3000soft/Red Spider EC")
+        os.popen("REDAgent")
+        os.chdir(cwd)
+
+    thread = threading.Thread(target=_open)
+    thread.daemon = True
+    thread.start()
+
+
 def killing(name):
     os.popen(f"taskkill /t /f /im {name} 1>nul 2>nul")
     print("OK")
 
 
+def killing_loop(name):
+    def _kill(_name):
+        while True:
+            killing(_name)
+
+    thread = threading.Thread(target=_kill, args=(name,))
+    thread.daemon = True
+    thread.start()
+
+
 class MainTk(tkinter.Tk):
     def __init__(self):
         tkinter.Tk.__init__(self)
+        first_check()
         self.title("Easyclassing")
         self.geometry("512x288")
         self.resizable(False, False)
@@ -75,6 +140,7 @@ class ControlTk(tkinter.Toplevel):
 class ControlCloseTk(tkinter.Toplevel):
     def __init__(self):
         tkinter.Toplevel.__init__(self)
+        self.values = ["极域", "惠普", "红蜘蛛", "其它"]
         self.title("Easyclassing-关闭控制")
         self.geometry("512x288")
         self.resizable(False, False)
@@ -82,10 +148,10 @@ class ControlCloseTk(tkinter.Toplevel):
         self.title_label.pack()
         self.maker_label = tkinter.ttk.Label(self, text="   ", font=("Calibri Light", 12))
         self.maker_label.pack(anchor="ne")
-        self.combobox = tkinter.ttk.Combobox(self, state="readonly", values=["极域", "惠普", "其它"])
+        self.combobox = tkinter.ttk.Combobox(self, state="readonly", values=self.values)
         self.combobox.pack()
         self.combobox.bind("<<ComboboxSelected>>", self.entry_setting)
-        self.combobox.set("极域")
+        self.combobox.set(first_check())
         self.entry_frame = tkinter.ttk.Frame(self, width=150, height=30)
         self.entry_frame.pack()
         self.name_label = tkinter.ttk.Label(self.entry_frame, text="映像名：", font=("微软雅黑 Light", 12))
@@ -95,8 +161,9 @@ class ControlCloseTk(tkinter.Toplevel):
         self.entry.pack(side="left")
         self.button = tkinter.ttk.Button(self, text="关闭控制", command=self.go)
         self.button.pack()
+        self.entry_setting(None)
 
-    def entry_setting(self, _any):
+    def entry_setting(self, event):
         if self.combobox.get() == "其它":
             self.entry["state"] = "normal"
             self.var.set("")
@@ -106,6 +173,8 @@ class ControlCloseTk(tkinter.Toplevel):
                 self.var.set("studentmain.exe")
             elif self.combobox.get() == "惠普":
                 self.var.set("hpteach.exe")
+            elif self.combobox.get() == "红蜘蛛":
+                self.var.set("REDAgent.exe")
             self.entry["state"] = "readonly"
 
     def go(self):
@@ -122,12 +191,18 @@ class ControlOpenTk(tkinter.Toplevel):
         self.title_label.pack()
         self.maker_label = tkinter.ttk.Label(self, text="   ", font=("Calibri Light", 12))
         self.maker_label.pack(anchor="ne")
-        self.open_button = tkinter.ttk.Button(self, text="极域", command=self.go_jiyu)
-        self.open_button.pack()
+        self.open_jiyu_button = tkinter.ttk.Button(self, text="极域", command=self.go_jiyu)
+        self.open_jiyu_button.pack()
+        self.open_red_agent_button = tkinter.ttk.Button(self, text="红蜘蛛", command=self.go_red_agent)
+        self.open_red_agent_button.pack()
 
     @staticmethod
     def go_jiyu():
         jiyu_opening()
+
+    @staticmethod
+    def go_red_agent():
+        red_agent_opening()
 
 
 if __name__ == '__main__':

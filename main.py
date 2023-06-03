@@ -7,6 +7,7 @@ import time
 
 def tasklist():
     os.popen("tasklist > tasks.txt")
+    time.sleep(0.3)
     file = open("tasks.txt", "r")
     out = file.read()
     file.close()
@@ -15,10 +16,10 @@ def tasklist():
 
 
 def first_check():
-    print(os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"))
-    if os.path.exists("C:/Program Files (x86)/Mythware"):
+    tasks = tasklist()
+    if "Studentmain" in tasks:
         return "极域"
-    elif os.path.exists("C:/Program Files (x86)/3000soft/Red Spider") or os.path.exists("C:/Program Files (x86)/3000soft/Red Spider EC"):
+    elif "REDAgent" in tasks:
         if os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"):
             finish = False
             cwd = os.getcwd()
@@ -206,4 +207,5 @@ class ControlOpenTk(tkinter.Toplevel):
 
 
 if __name__ == '__main__':
+    print(tasklist())
     MainTk().mainloop()

@@ -9,3 +9,6 @@
 * 对安装在默认目录下的红蜘蛛课堂管理系统和极域电子教室软件具有退出和重进的功能。
 * 对未安装在默认目录下的红蜘蛛课堂管理系统和极域电子教室软件具有退出的功能。
 * 对惠普课堂管理系统具有退出的功能（未确认）。
+
+## 许可
+[MIT License](https://github.com/hootime-183/Easyclassing/main/LICENSE) (free, open source)

@@ -11,4 +11,4 @@
 * 对惠普课堂管理系统具有退出的功能（未确认）。
 
 ## 许可
-[MIT License](https://github.com/hootime-183/Easyclassing/main/LICENSE) (free, open source)
+[MIT License](https://github.com/hootime-183/Easyclassing/blob/main/LICENSE) (free, open source)

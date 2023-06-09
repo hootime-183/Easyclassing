@@ -1,21 +1,77 @@
-import tkinter
-import tkinter.ttk
 import os
+import re
 import threading
 import time
+
+
+file = open("D:/.ec/settings", "r")
+settings_txt = file.read()
+file.close()
+print(re.findall("style=(.*?)\n", settings_txt), settings_txt)
+tk_name = re.findall("style=(.*?)\n", settings_txt)
+
+
+def get_tk(name):
+    import tkinter
+    import tkinter.ttk
+    import sv_ttk
+
+    if name == "tkinter.ttk":
+        class ReturnTk:
+            def __init__(self):
+                self.Tk = tkinter.Tk
+                self.Toplevel = tkinter.Toplevel
+                self.StringVar = tkinter.StringVar
+                self.ttk = tkinter.ttk
+        return ReturnTk()
+    elif name == "sv_ttk.light":
+        class Tk(tkinter.Tk):
+            def mainloop(self, **kwargs):
+                sv_ttk.set_theme("light")
+                tkinter.Tk.mainloop(self)
+
+        class ReturnTk:
+            def __init__(self):
+                self.Tk = Tk
+                self.Toplevel = tkinter.Toplevel
+                self.StringVar = tkinter.StringVar
+                self.ttk = tkinter.ttk
+        return ReturnTk()
+    elif name == "sv_ttk.dark":
+        class Tk(tkinter.Tk):
+            def mainloop(self, **kwargs):
+                sv_ttk.set_theme("dark")
+                tkinter.Tk.mainloop(self)
+
+        class ReturnTk:
+            def __init__(self):
+                self.Tk = Tk
+                self.Toplevel = tkinter.Toplevel
+                self.StringVar = tkinter.StringVar
+                self.ttk = tkinter.ttk
+        return ReturnTk()
 
 
 def tasklist():
     os.popen("tasklist > tasks.txt")
     time.sleep(0.3)
-    file = open("tasks.txt", "r")
-    out = file.read()
-    file.close()
+    file_in = open("tasks.txt", "r")
+    out = file_in.read()
+    file_in.close()
     os.popen("del tasks.txt")
     return out
 
 
 def first_check():
+    global tk_name, settings_txt
+    settings_txt: str
+    if not os.path.exists(f"D:/.ec"):
+        os.mkdir("D:/.ec")
+        file_in = open("D:/.ec/settings", "w+")
+        file_in.write("style=tkinter.ttk\n")
+        settings_txt = file_in.read()
+        file_in.close()
+
     tasks = tasklist()
     if "Studentmain" in tasks:
         return "极域"
@@ -88,6 +144,16 @@ def killing_loop(name):
     thread.start()
 
 
+tkinter = get_tk(tk_name)
+
+
+def restart_tk():
+    global main
+    main.destroy()
+    main = MainTk()
+    main.mainloop()
+
+
 class MainTk(tkinter.Tk):
     def __init__(self):
         tkinter.Tk.__init__(self)
@@ -100,13 +166,19 @@ class MainTk(tkinter.Tk):
         self.maker_label = tkinter.ttk.Label(self, text="By Hootime183           ", font=("Calibri Light", 12))
         self.maker_label.pack(anchor="ne")
         self.control_button = tkinter.ttk.Button(self, text="课堂控制", command=self.open_control_page)
-
         self.control_button.pack()
+        self.settings_button = tkinter.ttk.Button(self, text="设置", command=self.open_settings_page, width=10)
+        self.settings_button.pack(side="bottom", anchor="e", padx=5, pady=5)
 
     @staticmethod
     def open_control_page():
         control = ControlTk()
         control.mainloop()
+
+    @staticmethod
+    def open_settings_page():
+        settings = SettingsTk()
+        settings.mainloop()
 
 
 class ControlTk(tkinter.Toplevel):
@@ -206,6 +278,27 @@ class ControlOpenTk(tkinter.Toplevel):
         red_agent_opening()
 
 
+class SettingsTk(tkinter.Toplevel):
+    def __init__(self):
+        tkinter.Toplevel.__init__(self)
+        self.title("Easyclassing-设置")
+        self.geometry("512x288")
+        self.resizable(False, False)
+        self.title_label = tkinter.ttk.Label(self, text="设置", font=("微软雅黑 Light", 24))
+        self.title_label.pack()
+        self.combobox = tkinter.ttk.Combobox(self, state="readonly", values=["tkinter.ttk", "sv_ttk.light", "sv_ttk.dark"])
+        self.combobox.pack(pady=5)
+        self.button = tkinter.ttk.Button(self, text="完成")
+        self.button.pack(pady=5)
+
+    def complete(self):
+        global tk_name, settings_txt
+        print(re.sub(tk_name, self.combobox.get(), settings_txt))
+
+
+main = MainTk()
+
+
 if __name__ == '__main__':
     print(tasklist())
-    MainTk().mainloop()
+    main.mainloop()

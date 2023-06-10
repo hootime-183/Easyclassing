@@ -4,6 +4,66 @@ import threading
 import time
 
 
+setting_text: str
+
+
+def tasklist():
+    os.popen("tasklist > tasks.txt")
+    time.sleep(0.3)
+    file_in = open("tasks.txt", "r")
+    out = file_in.read()
+    file_in.close()
+    os.popen("del tasks.txt")
+    return out
+
+
+def first_check():
+    global tk_name, settings_txt
+
+    if not os.path.exists(f"D:/.ec"):
+        os.mkdir("D:/.ec")
+        file_in = open("D:/.ec/settings", "w+")
+        file_in.write("style=tkinter.ttk\n")
+        settings_txt = file_in.read()
+        file_in.close()
+    file_in = open("D:/.ec/settings", "r")
+    settings_txt = file_in.read()
+    file_in.close()
+    print(re.findall("style=(.*?)\n", settings_txt), settings_txt)
+    tk_name = re.findall("style=(.*?)\n", settings_txt)
+
+    tasks = tasklist()
+    if "Studentmain" in tasks:
+        return "极域"
+    elif "REDAgent" in tasks:
+        if os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"):
+            finish = False
+            cwd = os.getcwd()
+            os.chdir("C:/Program Files (x86)/3000soft")
+
+            def _kill(_name):
+                while not finish:
+                    killing(_name)
+
+            thread = threading.Thread(target=_kill, args=("REDAgent.exe",))
+            thread.daemon = True
+            thread.start()
+            print(os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"))
+            while os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"):
+                os.rename("Red Spider", "Red Spider EC")
+                print(os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"))
+            finish = True
+            os.chdir("C:/Program Files (x86)/3000soft/Red Spider EC")
+            time.sleep(0.1)
+            os.popen("REDAgent.exe")
+
+            os.chdir(cwd)
+        return "红蜘蛛"
+    else:
+        return "其它"
+
+
+first_check()
 file = open("D:/.ec/settings", "r")
 settings_txt = file.read()
 file.close()
@@ -52,57 +112,6 @@ def get_tk(name):
         return ReturnTk()
 
 
-def tasklist():
-    os.popen("tasklist > tasks.txt")
-    time.sleep(0.3)
-    file_in = open("tasks.txt", "r")
-    out = file_in.read()
-    file_in.close()
-    os.popen("del tasks.txt")
-    return out
-
-
-def first_check():
-    global tk_name, settings_txt
-    settings_txt: str
-    if not os.path.exists(f"D:/.ec"):
-        os.mkdir("D:/.ec")
-        file_in = open("D:/.ec/settings", "w+")
-        file_in.write("style=tkinter.ttk\n")
-        settings_txt = file_in.read()
-        file_in.close()
-
-    tasks = tasklist()
-    if "Studentmain" in tasks:
-        return "极域"
-    elif "REDAgent" in tasks:
-        if os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"):
-            finish = False
-            cwd = os.getcwd()
-            os.chdir("C:/Program Files (x86)/3000soft")
-
-            def _kill(_name):
-                while not finish:
-                    killing(_name)
-
-            thread = threading.Thread(target=_kill, args=("REDAgent.exe",))
-            thread.daemon = True
-            thread.start()
-            print(os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"))
-            while os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"):
-                os.rename("Red Spider", "Red Spider EC")
-                print(os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"))
-            finish = True
-            os.chdir("C:/Program Files (x86)/3000soft/Red Spider EC")
-            time.sleep(0.1)
-            os.popen("REDAgent.exe")
-
-            os.chdir(cwd)
-        return "红蜘蛛"
-    else:
-        return "其它"
-
-
 def jiyu_opening():
     def _open():
         cwd = os.getcwd()
@@ -144,14 +153,18 @@ def killing_loop(name):
     thread.start()
 
 
-tkinter = get_tk(tk_name)
+tkinter = get_tk(tk_name[0])
+print(os.path.basename(__file__))
 
 
 def restart_tk():
     global main
+    if os.path.basename(__file__).split(".")[-1] == "py":
+        print(f"python {os.path.basename(__file__)}")
+        os.popen(f"python {os.path.basename(__file__)}")
+    else:
+        os.popen(os.path.basename(__file__))
     main.destroy()
-    main = MainTk()
-    main.mainloop()
 
 
 class MainTk(tkinter.Tk):
@@ -288,12 +301,16 @@ class SettingsTk(tkinter.Toplevel):
         self.title_label.pack()
         self.combobox = tkinter.ttk.Combobox(self, state="readonly", values=["tkinter.ttk", "sv_ttk.light", "sv_ttk.dark"])
         self.combobox.pack(pady=5)
-        self.button = tkinter.ttk.Button(self, text="完成")
+        self.button = tkinter.ttk.Button(self, text="完成", command=self.complete)
         self.button.pack(pady=5)
 
     def complete(self):
         global tk_name, settings_txt
-        print(re.sub(tk_name, self.combobox.get(), settings_txt))
+        print(re.sub(tk_name[0], self.combobox.get(), settings_txt))
+        file_in = open("D:/.ec/settings", "w+")
+        file_in.write(re.sub(tk_name[0], self.combobox.get(), settings_txt))
+        file_in.close()
+        restart_tk()
 
 
 main = MainTk()

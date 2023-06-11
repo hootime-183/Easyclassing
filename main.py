@@ -1,6 +1,7 @@
 import os
 import re
 import threading
+import tkinter.messagebox as msg
 import time
 
 
@@ -159,11 +160,7 @@ print(os.path.basename(__file__))
 
 def restart_tk():
     global main
-    if os.path.basename(__file__).split(".")[-1] == "py":
-        print(f"python {os.path.basename(__file__)}")
-        os.popen(f"python {os.path.basename(__file__)}")
-    else:
-        os.popen(os.path.basename(__file__))
+    msg.showinfo("提示", "请重启程序")
     main.destroy()
 
 

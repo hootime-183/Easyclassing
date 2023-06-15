@@ -10,5 +10,8 @@
 * 对未安装在默认目录下的红蜘蛛课堂管理系统和极域电子教室软件具有退出的功能。
 * 对惠普课堂管理系统具有退出的功能（未确认）。
 
+## 鸣谢
+* rdbende（GUI使用了sv_ttk）
+
 ## 许可
 [MIT License](https://github.com/hootime-183/Easyclassing/blob/main/LICENSE) (free, open source)

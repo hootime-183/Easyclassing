@@ -14,7 +14,7 @@
 * 见[特性](BUGS.md)
 
 ## 鸣谢
-* rdbende（GUI使用了sv_ttk）
+* [rdbende](https://github.com/rdbende)（GUI使用了[sv_ttk](github.com/rdbende/Sun-Valley-ttk-theme)）
 
 ## 许可
 [MIT License](https://github.com/hootime-183/Easyclassing/blob/main/LICENSE) (free, open source)

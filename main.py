@@ -7,23 +7,49 @@ import tkinter.messagebox as msg
 import time
 
 
+__version__ = "1.1.0.03"
+
+
 setting_text: str
+programs = {
+    "Jiyu": False,
+    "REDAgent": False
+}
+settings = {
+    "version": __version__,
+    "theme": "sv_ttk.light"
+}
+
+
+class Thread(threading.Thread):
+    def __init__(self, target, args=()):
+        threading.Thread.__init__(self, target=target, args=args)
+        self.setDaemon(True)
 
 
 def tasklist():
-    os.popen("tasklist > tasks.txt")
-    time.sleep(0.3)
-    file_in = open("tasks.txt", "r")
-    out = file_in.read()
-    file_in.close()
-    os.popen("del tasks.txt")
-    return out
+    global programs
+    while True:
+        os.popen("tasklist > tasks.txt")
+        time.sleep(0.3)
+        file_in = open("tasks.txt", "r")
+        tasks = file_in.read()
+        if "studentmain.exe" in tasks:
+            programs["Jiyu"] = True
+        elif "REDAgent.exe" in tasks:
+            programs["REDAgent"] = True
+        file_in.close()
+        time.sleep(1)
+
+
+def settings_func():
+    values = re.findall()
 
 
 def file_set():
-    settings = open("./settings", "w+")
-    settings.write("style=sv_ttk.light\n")
-    settings.close()
+    settings_file = open("./settings.properties", "w+")
+    settings_file.write("style=sv_ttk.light\n")
+    settings_file.close()
 
     sv_tcl = open("./sv.tcl", "wb+")
     sv_tcl.write(b'package require Tk 8.6\n\nif {[tk windowingsystem] == "win32"} {\n  set static ""\n} else {\n  set static " static"\n}\n\nfont create SunValleyCaptionFont -family "Segoe UI Variable$static Small" -size -12\nfont create SunValleyBodyFont -family "Segoe UI Variable$static Text" -size -14\nfont create SunValleyBodyStrongFont -family "Segoe UI Variable$static Text Semibold" -size -14\nfont create SunValleyBodyLargeFont -family "Segoe UI Variable$static Text" -size -18\nfont create SunValleySubtitleFont -family "Segoe UI Variable$static Display Semibold" -size -20\nfont create SunValleyTitleFont -family "Segoe UI Variable$static Display Semibold" -size -28\nfont create SunValleyTitleLargeFont -family "Segoe UI Variable$static Display Semibold" -size -40\nfont create SunValleyDisplayFont -family "Segoe UI Variable$static Display Semibold" -size -68\n\nproc config_input_font {w} {\n  if {[ttk::style theme use] in [list "sun-valley-dark" "sun-valley-light"]} {\n    $w configure -font SunValleyBodyFont\n  }\n}\n\nproc config_menus {w} {\n  if {[tk windowingsystem] != "aqua"} {\n    set theme [ttk::style theme use]\n    if {$theme == "sun-valley-dark"} {\n      $w configure \\\n          -relief solid \\\n          -borderwidth 1 \\\n          -activeborderwidth 0 \\\n          -background "#202020" \\\n          -activebackground "#434343" \\\n          -activeforeground "#fafafa" \\\n          -selectcolor "#fafafa"\n    } elseif {$theme == "sun-valley-light"} {\n      $w configure \\\n          -relief solid \\\n          -borderwidth 1 \\\n          -activeborderwidth 0 \\\n          -background "#ebebeb" \\\n          -activebackground "#c4c4c4" \\\n          -activeforeground "#1c1c1c" \\\n          -selectcolor "#1c1c1c"\n    }\n\n    if {[[winfo toplevel $w] cget -menu] != $w} {\n      if {$theme == "sun-valley-dark"} {\n        $w configure -borderwidth 0 -background $ttk::theme::sv_dark::theme_colors(-bg)\n      } elseif {$theme == "sun-valley-light"} {\n        $w configure -borderwidth 0 -background $ttk::theme::sv_light::theme_colors(-bg)\n      }\n    }\n  }\n}\n\nbind TEntry <<ThemeChanged>> {config_input_font %W}\nbind TCombobox <<ThemeChanged>> {config_input_font %W}\nbind TSpinbox <<ThemeChanged>> {config_input_font %W}\nbind Menu <<ThemeChanged>> {config_menus %W}\n\nsource [file join [file dirname [info script]] theme light.tcl]\nsource [file join [file dirname [info script]] theme dark.tcl]\n\n\nproc set_theme {mode} {\n  if {$mode == "dark"} {\n    ttk::style theme use "sun-valley-dark"\n    \n    ttk::style configure . \\\n      -background $ttk::theme::sv_dark::theme_colors(-bg) \\\n      -foreground $ttk::theme::sv_dark::theme_colors(-fg) \\\n      -troughcolor $ttk::theme::sv_dark::theme_colors(-bg) \\\n      -focuscolor $ttk::theme::sv_dark::theme_colors(-selbg) \\\n      -selectbackground $ttk::theme::sv_dark::theme_colors(-selbg) \\\n      -selectforeground $ttk::theme::sv_dark::theme_colors(-selfg) \\\n      -insertwidth 1 \\\n      -insertcolor $ttk::theme::sv_dark::theme_colors(-fg) \\\n      -fieldbackground $ttk::theme::sv_dark::theme_colors(-bg) \\\n      -font SunValleyBodyFont \\\n      -borderwidth 0 \\\n      -relief flat\n\n    tk_setPalette \\\n      background $ttk::theme::sv_dark::theme_colors(-bg) \\\n      foreground $ttk::theme::sv_dark::theme_colors(-fg) \\\n      highlightColor $ttk::theme::sv_dark::theme_colors(-selbg) \\\n      selectBackground $ttk::theme::sv_dark::theme_colors(-selbg) \\\n      selectForeground $ttk::theme::sv_dark::theme_colors(-selfg) \\\n      activeBackground $ttk::theme::sv_dark::theme_colors(-selbg) \\\n      activeForeground $ttk::theme::sv_dark::theme_colors(-selfg)\n    \n    ttk::style map . -foreground [list disabled $ttk::theme::sv_dark::theme_colors(-disfg)]\n\n    option add *tearOff 0\n  \n  } elseif {$mode == "light"} {\n    ttk::style theme use "sun-valley-light"\n    \n    ttk::style configure . \\\n      -background $ttk::theme::sv_light::theme_colors(-bg) \\\n      -foreground $ttk::theme::sv_light::theme_colors(-fg) \\\n      -troughcolor $ttk::theme::sv_light::theme_colors(-bg) \\\n      -focuscolor $ttk::theme::sv_light::theme_colors(-selbg) \\\n      -selectbackground $ttk::theme::sv_light::theme_colors(-selbg) \\\n      -selectforeground $ttk::theme::sv_light::theme_colors(-selfg) \\\n      -insertwidth 1 \\\n      -insertcolor $ttk::theme::sv_light::theme_colors(-fg) \\\n      -fieldbackground $ttk::theme::sv_light::theme_colors(-bg) \\\n      -font SunValleyBodyFont \\\n      -borderwidth 0 \\\n      -relief flat\n\n    tk_setPalette \\\n      background $ttk::theme::sv_light::theme_colors(-bg) \\\n      foreground $ttk::theme::sv_light::theme_colors(-fg) \\\n      highlightColor $ttk::theme::sv_light::theme_colors(-selbg) \\\n      selectBackground $ttk::theme::sv_light::theme_colors(-selbg) \\\n      selectForeground $ttk::theme::sv_light::theme_colors(-selfg) \\\n      activeBackground $ttk::theme::sv_light::theme_colors(-selbg) \\\n      activeForeground $ttk::theme::sv_light::theme_colors(-selfg)\n    \n    ttk::style map . -foreground [list disabled $ttk::theme::sv_light::theme_colors(-disfg)]\n\n    option add *tearOff 0\n  }\n}\n')
@@ -60,20 +86,19 @@ def first_check():
     global tk_name, settings_txt
 
     try:
-        file_in = open("./settings", "r")
+        file_in = open("./settings.properties", "r")
     except FileNotFoundError:
         file_set()
-        file_in = open("./settings", "r")
+        file_in = open("./settings.properties", "r")
 
     settings_txt = file_in.read()
     file_in.close()
     print(re.findall("style=(.*?)\n", settings_txt), settings_txt)
     tk_name = re.findall("style=(.*?)\n", settings_txt)
 
-    tasks = tasklist()
-    if "Studentmain" in tasks:
+    if programs["Jiyu"]:
         return "极域"
-    elif "REDAgent" in tasks:
+    elif programs["REDAgent"]:
         if os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"):
             finish = False
             cwd = os.getcwd()
@@ -102,7 +127,7 @@ def first_check():
 
 
 first_check()
-file = open("./settings", "r")
+file = open("./settings.properties", "r")
 settings_txt = file.read()
 file.close()
 print(re.findall("style=(.*?)\n", settings_txt), settings_txt)
@@ -305,15 +330,16 @@ class SettingsTk(tkinter.Toplevel):
     def complete(self):
         global tk_name, settings_txt
         print(re.sub(tk_name[0], self.combobox.get(), settings_txt))
-        file_in = open("D:/.ec/settings", "w+")
+        file_in = open("./settings.properties", "w+")
         file_in.write(re.sub(tk_name[0], self.combobox.get(), settings_txt))
         file_in.close()
         restart_tk()
 
 
 main = MainTk()
+tasklist_thread = Thread(tasklist)
 
 
 if __name__ == '__main__':
-    print(tasklist())
+    tasklist_thread.start()
     main.mainloop()

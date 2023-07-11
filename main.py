@@ -17,14 +17,14 @@ programs = {
 }
 settings = {
     "version": __version__,
-    "theme": "sv_ttk.light"
+    "style": "sv_ttk.light"
 }
 
 
 class Thread(threading.Thread):
     def __init__(self, target, args=()):
         threading.Thread.__init__(self, target=target, args=args)
-        self.setDaemon(True)
+        self.daemon = True
 
 
 def tasklist():
@@ -43,7 +43,20 @@ def tasklist():
 
 
 def settings_func():
-    values = re.findall()
+    settings_file = open("settings.properties", "r")
+    values = re.findall("(.*?)=(.*?)\n", settings_file.read())
+    settings_file.close()
+    for i in values:
+        settings[i[0]] = i[1]
+    settings["version"] = __version__
+
+    while True:
+        settings_file = open("settings.properties", "w+")
+        string = ""
+        for i in settings:
+            string += f"{i}={settings[i]}\n"
+        settings_file.write(string)
+        settings_file.close()
 
 
 def file_set():
@@ -178,12 +191,6 @@ def killing_loop(name):
 print(os.path.basename(__file__))
 
 
-def restart_tk():
-    global main
-    msg.showinfo("提示", "请重启程序")
-    main.destroy()
-
-
 class MainTk(tkinter.Tk):
     def __init__(self):
         tkinter.Tk.__init__(self)
@@ -200,8 +207,8 @@ class MainTk(tkinter.Tk):
         self.settings_button = tkinter.ttk.Button(self, text="设置", command=self.open_settings_page, width=10)
         self.settings_button.pack(side="bottom", anchor="e", padx=5, pady=5)
         self.call("source", "./sv.tcl")
-        print(tk_name)
-        if tk_name[0] == "sv_ttk.light":
+        print(settings["style"])
+        if settings["style"] == "sv_ttk.light":
             self.call("set_theme", "light")
         else:
             self.call("set_theme", "dark")
@@ -213,8 +220,8 @@ class MainTk(tkinter.Tk):
 
     @staticmethod
     def open_settings_page():
-        settings = SettingsTk()
-        settings.mainloop()
+        settings_tk = SettingsTk()
+        settings_tk.mainloop()
 
 
 class ControlTk(tkinter.Toplevel):
@@ -329,17 +336,20 @@ class SettingsTk(tkinter.Toplevel):
 
     def complete(self):
         global tk_name, settings_txt
-        print(re.sub(tk_name[0], self.combobox.get(), settings_txt))
-        file_in = open("./settings.properties", "w+")
-        file_in.write(re.sub(tk_name[0], self.combobox.get(), settings_txt))
-        file_in.close()
-        restart_tk()
+        settings["style"] = self.combobox.get()
+        if settings["style"] == "sv_ttk.light":
+            main.call("set_theme", "light")
+        else:
+            main.call("set_theme", "dark")
+
 
 
 main = MainTk()
 tasklist_thread = Thread(tasklist)
+settings_thread = Thread(settings_func)
 
 
 if __name__ == '__main__':
     tasklist_thread.start()
+    settings_thread.start()
     main.mainloop()

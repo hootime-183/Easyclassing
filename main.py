@@ -3,11 +3,10 @@ import re
 import threading
 import tkinter
 import tkinter.ttk
-import tkinter.messagebox as msg
 import time
 
 
-__version__ = "1.1.0.03"
+__version__ = "1.1.0"
 
 
 setting_text: str

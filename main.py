@@ -117,9 +117,6 @@ def first_check():
             print(os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"))
             while os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"):
                 os.rename("Red Spider", "Red Spider EC")
-            os.chdir("C:/Program Files (x86)/3000soft/Red Spider EC")
-            time.sleep(0.1)
-
             os.chdir(cwd)
         return "红蜘蛛"
     else:

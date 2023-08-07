@@ -112,25 +112,13 @@ def first_check():
         return "极域"
     elif programs["REDAgent"]:
         if os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"):
-            finish = False
             cwd = os.getcwd()
             os.chdir("C:/Program Files (x86)/3000soft")
-
-            def _kill(_name):
-                while not finish:
-                    killing(_name)
-
-            thread = threading.Thread(target=_kill, args=("REDAgent.exe",))
-            thread.daemon = True
-            thread.start()
             print(os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"))
             while os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"):
                 os.rename("Red Spider", "Red Spider EC")
-                print(os.path.exists("C:/Program Files (x86)/3000soft/Red Spider"))
-            finish = True
             os.chdir("C:/Program Files (x86)/3000soft/Red Spider EC")
             time.sleep(0.1)
-            os.popen("REDAgent.exe")
 
             os.chdir(cwd)
         return "红蜘蛛"

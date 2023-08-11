@@ -5,9 +5,10 @@ import threading
 import tkinter
 import tkinter.ttk
 import time
+import urllib.request
 
 
-__version__ = "1.1.0"
+__version__ = "1.2.0.01"
 
 
 setting_text: str
@@ -19,6 +20,7 @@ settings = {
     "version": __version__,
     "style": "sv_ttk.light"
 }
+dir_changed = False
 
 
 class Thread(threading.Thread):
@@ -27,36 +29,73 @@ class Thread(threading.Thread):
         self.daemon = True
 
 
+def download(url):
+    headers = {
+        "user-agent": f"Easyclassing{__version__}"
+    }
+    req = urllib.request.Request(url, headers=headers)
+    return urllib.request.urlopen(req).read()
+
+
+class Software:
+    def __init__(self, name="Easyclassing", git_path="hootime-183/Easyclassing", version=__version__, filename=f"main_{__version__}_windows.exe", ready=lambda: print(""), end=lambda: print("")):
+        self.end = end
+        self.ready = ready
+        self.name = name
+        self.git_path = git_path
+        self.version = version
+        self.filename = filename
+
+    def download(self, base):
+        def _download():
+            self.ready()
+            print(f"{base}/{self.git_path}/releases/download/{self.version}/{self.filename}")
+            res = download(f"{base}/{self.git_path}/releases/download/{self.version}/{self.filename}")
+            text = res
+            if not os.path.exists("./software"):
+                os.mkdir("software")
+            if not os.path.exists(f"./software/{self.name}"):
+                os.chdir("./software")
+                os.mkdir(self.name)
+                os.chdir("../..")
+            with open(f"./software/{self.name}/{self.filename}", "wb+") as f:
+                f.write(text)
+                f.close()
+            self.end()
+        Thread(_download).start()
+
+
 def tasklist():
     global programs
     while True:
-        os.popen("tasklist > tasks.txt")
-        time.sleep(0.3)
-        file_in = open("tasks.txt", "r")
-        tasks = file_in.read()
-        if "studentmain.exe" in tasks:
-            programs["Jiyu"] = True
-        elif "REDAgent.exe" in tasks:
-            programs["REDAgent"] = True
-        file_in.close()
-        time.sleep(1)
+        if not dir_changed:
+            os.popen("tasklist > tasks.txt")
+            time.sleep(0.3)
+            file_in = open("tasks.txt", "r")
+            tasks = file_in.read()
+            if "studentmain.exe" in tasks:
+                programs["Jiyu"] = True
+            elif "REDAgent.exe" in tasks:
+                programs["REDAgent"] = True
+            file_in.close()
+            time.sleep(1)
 
 
 def settings_func():
+    while dir_changed:
+        pass
+    global settings
     settings_file = open("settings.properties", "r")
     values = re.findall("(.*?)=(.*?)\n", settings_file.read())
     settings_file.close()
     for i in values:
         settings[i[0]] = i[1]
     settings["version"] = __version__
-
-    while True:
-        settings_file = open("settings.properties", "w+")
-        string = ""
-        for i in settings:
-            string += f"{i}={settings[i]}\n"
-        settings_file.write(string)
-        settings_file.close()
+    if settings["style"] == "sv_ttk.light":
+        main.call("set_theme", "light")
+    else:
+        main.call("set_theme", "dark")
+    print(settings)
 
 
 def file_set():
@@ -192,11 +231,8 @@ class MainTk(tkinter.Tk):
         self.settings_button = tkinter.ttk.Button(self, text="设置", command=self.open_settings_page, width=10)
         self.settings_button.pack(side="bottom", anchor="e", padx=5, pady=5)
         self.call("source", "./sv.tcl")
+        self.protocol("WM_DELETE_WINDOW", self.close)
         print(settings["style"])
-        if settings["style"] == "sv_ttk.light":
-            self.call("set_theme", "light")
-        else:
-            self.call("set_theme", "dark")
 
     @staticmethod
     def open_control_page():
@@ -207,6 +243,15 @@ class MainTk(tkinter.Tk):
     def open_settings_page():
         settings_tk = SettingsTk()
         settings_tk.mainloop()
+
+    def close(self):
+        print(settings)
+        settings_file = open("settings.properties", "w+")
+        string = ""
+        for i in settings:
+            string += f"{i}={settings[i]}\n"
+        settings_file.write(string)
+        self.destroy()
 
 
 class ControlTk(tkinter.Toplevel):
@@ -311,6 +356,7 @@ class ControlOpenTk(tkinter.Toplevel):
         self.button.pack()
         self.entry_setting(None)
 
+    # noinspection PyUnusedLocal
     def entry_setting(self, event):
         self.entry["state"] = "normal"
         self.var.set(self.values_dict[self.combobox.get()])
@@ -364,13 +410,17 @@ class SettingsTk(tkinter.Toplevel):
             main.call("set_theme", "dark")
 
 
-
 main = MainTk()
 tasklist_thread = Thread(tasklist)
 settings_thread = Thread(settings_func)
+software = {
+    "hmcl": Software("hmcl", "hootime-183/Easyclassing-DownloadStation", "hmcl", "hmcl.zip")
+}
 
 
 if __name__ == '__main__':
     tasklist_thread.start()
     settings_thread.start()
+    software["hmcl"].download("https://ghproxy.com/https://github.com")
+
     main.mainloop()

@@ -246,50 +246,47 @@ class MainTk(tkinter.Frame):
     def __init__(self):
         tkinter.Frame.__init__(self, height=288, width=512)
         first_check()
+        self.pack_propagate(False)
         self.title_label = tkinter.ttk.Label(self, text="Easyclassing", font=("Calibri Light", 26))
         self.title_label.pack()
         self.maker_label = tkinter.ttk.Label(self, text="By Hootime183       ", font=("Calibri Light", 12))
         self.maker_label.pack(anchor="e")
-        self.control_button = tkinter.ttk.Button(self, text="课堂控制", command=self.open_control_page)
+        self.control_button = tkinter.ttk.Button(self, text="课堂控制", command=lambda: self.open_page("Control"))
         self.control_button.pack()
-        self.settings_button = tkinter.ttk.Button(self, text="设置", command=self.open_settings_page, width=10)
-        self.settings_button.pack(side="bottom", anchor="e", padx=5, pady=5)
+        self.settings_button = tkinter.ttk.Button(self, text="设置", command=lambda: self.open_page("Settings"), width=10)
+        self.settings_button.pack(side="right", anchor="s", padx=5, pady=5)
 
-    def open_control_page(self):
+    def open_page(self, name):
         self.pack_forget()
-        main.pack("Control")
-
-    def open_settings_page(self):
-        self.pack_forget()
-        main.pack("Settings")
+        main.pack(name)
 
 
 class ControlTk(tkinter.Frame):
     def __init__(self):
         tkinter.Frame.__init__(self, height=288, width=512)
+        self.pack_propagate(False)
         self.title_label = tkinter.ttk.Label(self, text="课堂控制", font=("微软雅黑 Light", 24))
         self.title_label.pack()
         self.maker_label = tkinter.ttk.Label(self, text="   ", font=("Calibri Light", 12))
         self.maker_label.pack(anchor="ne")
-        self.open_button = tkinter.ttk.Button(self, text="打开控制", command=self.open_opening_page)
+        self.open_button = tkinter.ttk.Button(self, text="打开控制", command=lambda: self.open_page("ControlOpen"))
         self.open_button.pack()
         self.maker_label2 = tkinter.ttk.Label(self, text="   ", font=("Calibri Light", 6))
         self.maker_label2.pack(anchor="ne")
-        self.close_button = tkinter.ttk.Button(self, text="关闭控制", command=self.open_closing_page)
+        self.close_button = tkinter.ttk.Button(self, text="关闭控制", command=lambda: self.open_page("ControlClose"))
         self.close_button.pack()
+        self.back_button = tkinter.ttk.Button(self, text="返回", command=lambda: self.open_page("Main"), width=10)
+        self.back_button.pack(side="left", anchor="s", padx=5, pady=5)
 
-    def open_opening_page(self):
+    def open_page(self, name):
         self.pack_forget()
-        main.pack("ControlOpen")
-
-    def open_closing_page(self):
-        self.pack_forget()
-        main.pack("ControlClose")
+        main.pack(name)
 
 
 class ControlCloseTk(tkinter.Frame):
     def __init__(self):
         tkinter.Frame.__init__(self, height=288, width=512)
+        self.pack_propagate(False)
         self.values = ["极域", "惠普", "红蜘蛛", "其它"]
         self.values_dict = {
             "极域": "studentmain.exe",
@@ -315,6 +312,12 @@ class ControlCloseTk(tkinter.Frame):
         self.button = tkinter.ttk.Button(self, text="关闭控制", command=self.go)
         self.button.pack()
         self.entry_setting(None)
+        self.back_button = tkinter.ttk.Button(self, text="返回", command=lambda: self.open_page("Control"), width=10)
+        self.back_button.pack(side="left", anchor="s", padx=5, pady=5)
+
+    def open_page(self, name):
+        self.pack_forget()
+        main.pack(name)
 
     def entry_setting(self, event):
         self.entry["state"] = "normal"
@@ -329,6 +332,7 @@ class ControlCloseTk(tkinter.Frame):
 class ControlOpenTk(tkinter.Frame):
     def __init__(self):
         tkinter.Frame.__init__(self, height=288, width=512)
+        self.pack_propagate(False)
         self.values = ["极域", "红蜘蛛", "其它"]
         self.values_dict = {
             "极域": "C:/Program Files (x86)/Mythware/(first)/studentmain.exe",
@@ -339,7 +343,7 @@ class ControlOpenTk(tkinter.Frame):
         self.title_label.pack()
         self.maker_label = tkinter.ttk.Label(self, text="   ", font=("Calibri Light", 12))
         self.maker_label.pack(anchor="ne")
-        self.combobox = tkinter.ttk.Combobox(self, state="readonly", values=self.values)
+        self.combobox = tkinter.ttk.Combobox(self, state="readonly", values=self.values, )
         self.combobox.pack()
         self.combobox.bind("<<ComboboxSelected>>", self.entry_setting)
         self.combobox.set(first_check())
@@ -347,17 +351,23 @@ class ControlOpenTk(tkinter.Frame):
         self.entry_frame.pack()
         self.name_label = tkinter.ttk.Label(self.entry_frame, text="程序地址：", font=("微软雅黑 Light", 12))
         self.name_label.pack(side="left")
-        self.var = tkinter.StringVar()
-        self.entry = tkinter.ttk.Entry(self.entry_frame, textvariable=self.var)
+        self.entry_var = tkinter.StringVar()
+        self.entry = tkinter.ttk.Entry(self.entry_frame, textvariable=self.entry_var)
         self.entry.pack(side="left")
         self.button = tkinter.ttk.Button(self, text="打开控制", command=self.go)
         self.button.pack()
         self.entry_setting(None)
+        self.back_button = tkinter.ttk.Button(self, text="返回", command=lambda: self.open_page("Control"), width=10)
+        self.back_button.pack(side="left", anchor="s", padx=5, pady=5)
+
+    def open_page(self, name):
+        self.pack_forget()
+        main.pack(name)
 
     # noinspection PyUnusedLocal
     def entry_setting(self, event):
         self.entry["state"] = "normal"
-        self.var.set(self.values_dict[self.combobox.get()])
+        self.entry_var.set(self.values_dict[self.combobox.get()])
         if not self.combobox.get() == "其它":
             self.entry["state"] = "readonly"
 
@@ -389,12 +399,29 @@ class ControlOpenTk(tkinter.Frame):
 class SettingsTk(tkinter.Frame):
     def __init__(self):
         tkinter.Frame.__init__(self, height=288, width=512)
+        self.pack_propagate(False)
         self.title_label = tkinter.ttk.Label(self, text="设置", font=("微软雅黑 Light", 24))
         self.title_label.pack()
-        self.combobox = tkinter.ttk.Combobox(self, state="readonly", values=["sv_ttk.light", "sv_ttk.dark"])
+        self.notebook = tkinter.ttk.Notebook(self, height=200, width=475)
+
+        self.UI_frame = tkinter.ttk.Frame(width=460)
+        self.UI_frame.theme_labelframe = tkinter.ttk.Labelframe(self.UI_frame, text="主题", width=450)
+        self.UI_frame.theme_labelframe.pack()
+        self.combobox_var = tkinter.StringVar()
+        self.combobox = tkinter.ttk.Combobox(self.UI_frame.theme_labelframe, state="readonly", values=["sv_ttk.light", "sv_ttk.dark"], textvariable=self.combobox_var)
         self.combobox.pack(pady=5)
-        self.button = tkinter.ttk.Button(self, text="完成", command=self.complete)
+        self.combobox_var.set(settings["style"])
+        self.button = tkinter.ttk.Button(self.UI_frame.theme_labelframe, text="完成", command=self.complete)
         self.button.pack(pady=5)
+        self.back_button = tkinter.ttk.Button(self.UI_frame.theme_labelframe, text="返回", command=lambda: self.open_page("Main"), width=10)
+        self.back_button.pack(side="left", anchor="s", padx=5, pady=5)
+
+        self.notebook.add(self.UI_frame, text="UI")
+        self.notebook.pack()
+
+    def open_page(self, name):
+        self.pack_forget()
+        main.pack(name)
 
     def complete(self):
         global tk_name, settings_txt

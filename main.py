@@ -8,7 +8,7 @@ import time
 import urllib.request
 
 
-__version__ = "1.2.0.01"
+__version__ = "1.1.2.01"
 
 
 setting_text: str
@@ -31,7 +31,7 @@ class Thread(threading.Thread):
 
 def download(url):
     headers = {
-        "user-agent": f"Easyclassing{__version__}"
+        "user-agent": f"Easyclassing/{__version__}"
     }
     req = urllib.request.Request(url, headers=headers)
     return urllib.request.urlopen(req).read()
@@ -145,7 +145,6 @@ def first_check():
 
     settings_txt = file_in.read()
     file_in.close()
-    print(re.findall("style=(.*?)\n", settings_txt), settings_txt)
     tk_name = re.findall("style=(.*?)\n", settings_txt)
 
     if programs["Jiyu"]:
@@ -167,7 +166,6 @@ first_check()
 file = open("./settings.properties", "r")
 settings_txt = file.read()
 file.close()
-print(re.findall("style=(.*?)\n", settings_txt), settings_txt)
 tk_name = re.findall("style=(.*?)\n", settings_txt)
 
 
@@ -212,37 +210,22 @@ def killing_loop(name):
     thread.start()
 
 
-print(os.path.basename(__file__))
-
-
-class MainTk(tkinter.Tk):
+class BaseTk(tkinter.Tk):
     def __init__(self):
         tkinter.Tk.__init__(self)
-        first_check()
         self.title("Easyclassing")
         self.geometry("512x288")
         self.resizable(False, False)
-        self.title_label = tkinter.ttk.Label(self, text="Easyclassing", font=("Calibri Light", 26))
-        self.title_label.pack()
-        self.maker_label = tkinter.ttk.Label(self, text="By Hootime183           ", font=("Calibri Light", 12))
-        self.maker_label.pack(anchor="ne")
-        self.control_button = tkinter.ttk.Button(self, text="课堂控制", command=self.open_control_page)
-        self.control_button.pack()
-        self.settings_button = tkinter.ttk.Button(self, text="设置", command=self.open_settings_page, width=10)
-        self.settings_button.pack(side="bottom", anchor="e", padx=5, pady=5)
         self.call("source", "./sv.tcl")
         self.protocol("WM_DELETE_WINDOW", self.close)
-        print(settings["style"])
-
-    @staticmethod
-    def open_control_page():
-        control = ControlTk()
-        control.mainloop()
-
-    @staticmethod
-    def open_settings_page():
-        settings_tk = SettingsTk()
-        settings_tk.mainloop()
+        self.frames = {
+            "Main": MainTk(),
+            "Control": ControlTk(),
+            "ControlOpen": ControlOpenTk(),
+            "ControlClose": ControlCloseTk(),
+            "Settings": SettingsTk()
+        }
+        self.pack("Main")
 
     def close(self):
         print(settings)
@@ -253,39 +236,60 @@ class MainTk(tkinter.Tk):
         settings_file.write(string)
         self.destroy()
 
+    def pack(self, name):
+        item = self.frames[name]
+        item.pack()
+        item.pack_propagate(False)
 
-class ControlTk(tkinter.Toplevel):
+
+class MainTk(tkinter.Frame):
     def __init__(self):
-        tkinter.Toplevel.__init__(self)
-        self.title("Easyclassing-课堂控制")
-        self.geometry("512x288")
-        self.resizable(False, False)
+        tkinter.Frame.__init__(self, height=288, width=512)
+        first_check()
+        self.title_label = tkinter.ttk.Label(self, text="Easyclassing", font=("Calibri Light", 26))
+        self.title_label.pack()
+        self.maker_label = tkinter.ttk.Label(self, text="By Hootime183       ", font=("Calibri Light", 12))
+        self.maker_label.pack(anchor="e")
+        self.control_button = tkinter.ttk.Button(self, text="课堂控制", command=self.open_control_page)
+        self.control_button.pack()
+        self.settings_button = tkinter.ttk.Button(self, text="设置", command=self.open_settings_page, width=10)
+        self.settings_button.pack(side="bottom", anchor="e", padx=5, pady=5)
+
+    def open_control_page(self):
+        self.pack_forget()
+        main.pack("Control")
+
+    def open_settings_page(self):
+        self.pack_forget()
+        main.pack("Settings")
+
+
+class ControlTk(tkinter.Frame):
+    def __init__(self):
+        tkinter.Frame.__init__(self, height=288, width=512)
         self.title_label = tkinter.ttk.Label(self, text="课堂控制", font=("微软雅黑 Light", 24))
         self.title_label.pack()
         self.maker_label = tkinter.ttk.Label(self, text="   ", font=("Calibri Light", 12))
         self.maker_label.pack(anchor="ne")
         self.open_button = tkinter.ttk.Button(self, text="打开控制", command=self.open_opening_page)
-
         self.open_button.pack()
         self.maker_label2 = tkinter.ttk.Label(self, text="   ", font=("Calibri Light", 6))
         self.maker_label2.pack(anchor="ne")
         self.close_button = tkinter.ttk.Button(self, text="关闭控制", command=self.open_closing_page)
         self.close_button.pack()
 
-    @staticmethod
-    def open_opening_page():
-        open_tk = ControlOpenTk()
-        open_tk.mainloop()
+    def open_opening_page(self):
+        self.pack_forget()
+        main.pack("ControlOpen")
 
-    @staticmethod
-    def open_closing_page():
-        close_tk = ControlCloseTk()
-        close_tk.mainloop()
+    def open_closing_page(self):
+        self.pack_forget()
+        main.pack("ControlClose")
 
 
-class ControlCloseTk(tkinter.Toplevel):
+class ControlCloseTk(tkinter.Frame):
     def __init__(self):
-        tkinter.Toplevel.__init__(self)
+        tkinter.Frame.__init__(self, height=288, width=512)
         self.values = ["极域", "惠普", "红蜘蛛", "其它"]
         self.values_dict = {
             "极域": "studentmain.exe",
@@ -293,9 +297,6 @@ class ControlCloseTk(tkinter.Toplevel):
             "红蜘蛛": "REDAgent.exe",
             "其它": ""
         }
-        self.title("Easyclassing-关闭控制")
-        self.geometry("512x288")
-        self.resizable(False, False)
         self.title_label = tkinter.ttk.Label(self, text="关闭控制", font=("微软雅黑 Light", 24))
         self.title_label.pack()
         self.maker_label = tkinter.ttk.Label(self, text="   ", font=("Calibri Light", 12))
@@ -325,18 +326,15 @@ class ControlCloseTk(tkinter.Toplevel):
         killing(self.entry.get())
 
 
-class ControlOpenTk(tkinter.Toplevel):
+class ControlOpenTk(tkinter.Frame):
     def __init__(self):
-        tkinter.Toplevel.__init__(self)
+        tkinter.Frame.__init__(self, height=288, width=512)
         self.values = ["极域", "红蜘蛛", "其它"]
         self.values_dict = {
             "极域": "C:/Program Files (x86)/Mythware/(first)/studentmain.exe",
             "红蜘蛛": "C:/Program Files (x86)/3000soft/Red Spider EC/REDAgent.exe",
             "其它": ""
         }
-        self.title("Easyclassing-打开控制")
-        self.geometry("512x288")
-        self.resizable(False, False)
         self.title_label = tkinter.ttk.Label(self, text="打开控制", font=("微软雅黑 Light", 24))
         self.title_label.pack()
         self.maker_label = tkinter.ttk.Label(self, text="   ", font=("Calibri Light", 12))
@@ -388,12 +386,9 @@ class ControlOpenTk(tkinter.Toplevel):
         os.chdir(cwd)
 
 
-class SettingsTk(tkinter.Toplevel):
+class SettingsTk(tkinter.Frame):
     def __init__(self):
-        tkinter.Toplevel.__init__(self)
-        self.title("Easyclassing-设置")
-        self.geometry("512x288")
-        self.resizable(False, False)
+        tkinter.Frame.__init__(self, height=288, width=512)
         self.title_label = tkinter.ttk.Label(self, text="设置", font=("微软雅黑 Light", 24))
         self.title_label.pack()
         self.combobox = tkinter.ttk.Combobox(self, state="readonly", values=["sv_ttk.light", "sv_ttk.dark"])
@@ -410,7 +405,7 @@ class SettingsTk(tkinter.Toplevel):
             main.call("set_theme", "dark")
 
 
-main = MainTk()
+main = BaseTk()
 tasklist_thread = Thread(tasklist)
 settings_thread = Thread(settings_func)
 software = {

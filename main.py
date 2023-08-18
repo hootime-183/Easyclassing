@@ -24,6 +24,7 @@ settings = {
     "style": "sv_ttk.light"
 }
 dir_changed = False
+exiting = False
 
 
 class Thread(threading.Thread):
@@ -71,7 +72,7 @@ class Software:
 def tasklist():
     global programs
     while True:
-        if not dir_changed:
+        if (not dir_changed) and (not exiting):
             os.popen("tasklist > tasks.txt")
             time.sleep(0.3)
             file_in = open("tasks.txt", "r")
@@ -235,6 +236,8 @@ class BaseTk(tkinter.Tk):
         self.pack("Main")
 
     def close(self):
+        global exiting
+        exiting = True
         print(settings)
         settings_file = open("settings.properties", "w+")
         string = ""

@@ -75,7 +75,6 @@ class Software:
         frame.name.pack(side="top", anchor="w")
         frame.version = tkinter.ttk.Label(frame, text=f"版本：{self.version}", font=("微软雅黑 Light", 8))
         frame.version.pack(side="left", anchor="n")
-        frame.git_path.pack(side="bottom", anchor="w")
         frame.pack()
         frame.pack_propagate(False)
 

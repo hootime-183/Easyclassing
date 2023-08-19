@@ -49,6 +49,7 @@ class Software:
         self.git_path = git_path
         self.version = version
         self.filename = filename
+        self.is_download = False
 
     def download(self, base):
         def _download():
@@ -68,12 +69,29 @@ class Software:
             self.end()
         Thread(_download).start()
 
+    def get_frame(self, master):
+        frame = tkinter.ttk.Frame(master, height=75, width=425)
+        frame.name = tkinter.ttk.Label(frame, text=self.name, font=("微软雅黑 Light", 12))
+        frame.name.pack(side="top", anchor="w")
+        frame.version = tkinter.ttk.Label(frame, text=f"版本：{self.version}", font=("微软雅黑 Light", 8))
+        frame.version.pack(side="left", anchor="n")
+        frame.git_path.pack(side="bottom", anchor="w")
+        frame.pack()
+        frame.pack_propagate(False)
+
+
+software = {
+    "hmcl": Software("hmcl", "hootime-183/Easyclassing-DownloadStation", "hmcl", "hmcl.zip")
+}
+
 
 def tasklist():
     global programs
+    _file = open("tasks.txt", "w+")
+    _file.close()
     while True:
         if (not dir_changed) and (not exiting):
-            os.popen("tasklist > tasks.txt")
+            os.popen("tasklist > tasks.txt 1>nul 2>nul")
             time.sleep(0.3)
             file_in = open("tasks.txt", "r")
             tasks = file_in.read()
@@ -99,7 +117,28 @@ def settings_func():
         main.call("set_theme", "light")
     else:
         main.call("set_theme", "dark")
-    print(settings)
+
+
+def command_line():
+    print("Easyclassing Commandline")
+    print("Version:"+__version__)
+    while True:
+        cmd = input().split(" ")
+        if cmd[0] == "set":
+            if cmd[1] == "page":
+                try:
+                    main.pack(cmd[2])
+                except:
+                    print("Page not found.")
+            else:
+                print("Command not found.")
+        elif cmd[0] == "print":
+            if cmd[1] == "settings":
+                print(settings)
+            else:
+                print("Command not found.")
+        else:
+            print("Command not found.")
 
 
 def file_set():
@@ -227,13 +266,15 @@ class BaseTk(tkinter.Tk):
         self.protocol("WM_DELETE_WINDOW", self.close)
         self.iconbitmap("icon.ico")
         self.frames = {
-            "Main": MainTk(),
-            "Control": ControlTk(),
-            "ControlOpen": ControlOpenTk(),
-            "ControlClose": ControlCloseTk(),
-            "Settings": SettingsTk()
+            "Main": MainTk(self),
+            "Control": ControlTk(self),
+            "ControlOpen": ControlOpenTk(self),
+            "ControlClose": ControlCloseTk(self),
+            "Settings": SettingsTk(self),
+            "Software": SoftwareTk(self)
         }
         self.pack("Main")
+        self.page_now = "Main"
 
     def close(self):
         global exiting
@@ -255,14 +296,19 @@ class BaseTk(tkinter.Tk):
         self.destroy()
 
     def pack(self, name):
+        try:
+            self.frames[self.page_now].pack_forget()
+        except:
+            pass
+        self.page_now = name
         item = self.frames[name]
         item.pack()
         item.pack_propagate(False)
 
 
-class MainTk(tkinter.Frame):
-    def __init__(self):
-        tkinter.Frame.__init__(self, height=288, width=512)
+class MainTk(tkinter.ttk.Frame):
+    def __init__(self, master):
+        tkinter.ttk.Frame.__init__(self, master, height=288, width=512)
         first_check()
         self.pack_propagate(False)
         self.title_label = tkinter.ttk.Label(self, text="Easyclassing", font=("Calibri Light", 26))
@@ -275,13 +321,12 @@ class MainTk(tkinter.Frame):
         self.settings_button.pack(side="right", anchor="s", padx=5, pady=5)
 
     def open_page(self, name):
-        self.pack_forget()
         main.pack(name)
 
 
-class ControlTk(tkinter.Frame):
-    def __init__(self):
-        tkinter.Frame.__init__(self, height=288, width=512)
+class ControlTk(tkinter.ttk.Frame):
+    def __init__(self, master):
+        tkinter.ttk.Frame.__init__(self, master, height=288, width=512)
         self.pack_propagate(False)
         self.title_label = tkinter.ttk.Label(self, text="课堂控制", font=("微软雅黑 Light", 24))
         self.title_label.pack()
@@ -297,13 +342,12 @@ class ControlTk(tkinter.Frame):
         self.back_button.pack(side="left", anchor="s", padx=5, pady=5)
 
     def open_page(self, name):
-        self.pack_forget()
         main.pack(name)
 
 
-class ControlCloseTk(tkinter.Frame):
-    def __init__(self):
-        tkinter.Frame.__init__(self, height=288, width=512)
+class ControlCloseTk(tkinter.ttk.Frame):
+    def __init__(self, master):
+        tkinter.ttk.Frame.__init__(self, master, height=288, width=512)
         self.pack_propagate(False)
         self.values = ["极域", "惠普", "红蜘蛛", "其它"]
         self.values_dict = {
@@ -347,9 +391,9 @@ class ControlCloseTk(tkinter.Frame):
         killing(self.entry.get())
 
 
-class ControlOpenTk(tkinter.Frame):
-    def __init__(self):
-        tkinter.Frame.__init__(self, height=288, width=512)
+class ControlOpenTk(tkinter.ttk.Frame):
+    def __init__(self, master):
+        tkinter.ttk.Frame.__init__(self, master, height=288, width=512)
         self.pack_propagate(False)
         self.values = ["极域", "红蜘蛛", "其它"]
         self.values_dict = {
@@ -379,7 +423,6 @@ class ControlOpenTk(tkinter.Frame):
         self.back_button.pack(side="left", anchor="s", padx=5, pady=5)
 
     def open_page(self, name):
-        self.pack_forget()
         main.pack(name)
 
     # noinspection PyUnusedLocal
@@ -401,22 +444,20 @@ class ControlOpenTk(tkinter.Frame):
                 current_dir = pathlib.Path('.')
                 os.chdir(f"./{[x for x in current_dir.iterdir()][0]}")
             else:
-                print(i)
                 os.chdir(f"./{i}")
 
         def _open():
             os.popen(exe)
             os.chdir(cwd)
 
-        thread = threading.Thread(target=_open)
-        thread.daemon = True
+        thread = Thread(_open)
         thread.start()
         os.chdir(cwd)
 
 
-class SettingsTk(tkinter.Frame):
-    def __init__(self):
-        tkinter.Frame.__init__(self, height=288, width=512)
+class SettingsTk(tkinter.ttk.Frame):
+    def __init__(self, master):
+        tkinter.ttk.Frame.__init__(self, master, height=288, width=512)
         self.pack_propagate(False)
         self.title_label = tkinter.ttk.Label(self, text="设置", font=("微软雅黑 Light", 24))
         self.title_label.pack()
@@ -432,7 +473,7 @@ class SettingsTk(tkinter.Frame):
         self.button = tkinter.ttk.Button(self.UI_frame.theme_labelframe, text="完成", command=self.complete)
         self.button.pack(pady=5)
         self.back_button = tkinter.ttk.Button(self, text="返回", command=lambda: self.open_page("Main"), width=10)
-        self.back_button.pack(side="left", anchor="s", padx=5, pady=5)
+        self.back_button.pack(side="bottom", anchor="w", padx=5, pady=5)
 
         self.notebook.add(self.UI_frame, text="UI")
         self.notebook.pack()
@@ -450,17 +491,27 @@ class SettingsTk(tkinter.Frame):
             main.call("set_theme", "dark")
 
 
+class SoftwareTk(tkinter.ttk.Frame):
+    def __init__(self, master):
+        global software
+        tkinter.ttk.Frame.__init__(self, master, height=288, width=512)
+        self.pack_propagate(False)
+        self.title_label = tkinter.ttk.Label(self, text="应用商城", font=("微软雅黑 Light", 24))
+        self.title_label.pack()
+        self.frames = dict()
+        for i in software:
+            self.frames[i] = software[i].get_frame(self)
+
+
 main = BaseTk()
 tasklist_thread = Thread(tasklist)
 settings_thread = Thread(settings_func)
-software = {
-    "hmcl": Software("hmcl", "hootime-183/Easyclassing-DownloadStation", "hmcl", "hmcl.zip")
-}
+command_line_thread = Thread(command_line)
 
 
 if __name__ == '__main__':
     tasklist_thread.start()
     settings_thread.start()
-    software["hmcl"].download("https://ghproxy.com/https://github.com")
+    command_line_thread.start()
 
     main.mainloop()

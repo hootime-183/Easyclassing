@@ -74,7 +74,10 @@ class Software:
         frame.name = tkinter.ttk.Label(frame, text=self.name, font=("微软雅黑 Light", 12))
         frame.name.pack(side="top", anchor="w")
         frame.version = tkinter.ttk.Label(frame, text=f"版本：{self.version}", font=("微软雅黑 Light", 8))
-        frame.version.pack(side="left", anchor="n")
+        frame.version.pack(side="top", anchor="w")
+        frame.git_path = tkinter.ttk.Label(frame, text=f"Github地址：{self.git_path}", font=("微软雅黑 Light", 8))
+        frame.git_path.pack(side="top", anchor="w")
+        frame.button = tkinter.ttk.Button(frame)
         frame.pack()
         frame.pack_propagate(False)
 

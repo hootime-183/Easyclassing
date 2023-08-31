@@ -23,6 +23,11 @@ settings = {
     "version": __version__,
     "style": "sv_ttk.light"
 }
+download_base = {
+    "github": "https://github.com",
+    "kgithub": "https://kgithub.com",
+    "ghproxy": "https://ghproxy.com/https://github.com"
+}
 dir_changed = False
 exiting = False
 
@@ -42,14 +47,15 @@ def download(url):
 
 
 class Software:
-    def __init__(self, name="Easyclassing", git_path="hootime-183/Easyclassing", version=__version__, filename=f"main_{__version__}_windows.exe", ready=lambda: print(""), end=lambda: print("")):
-        self.end = end
-        self.ready = ready
+    def __init__(self, name="Easyclassing", git_path="hootime-183/Easyclassing", version=__version__, filename=f"main_{__version__}_windows.exe",):
         self.name = name
         self.git_path = git_path
         self.version = version
         self.filename = filename
-        self.is_download = False
+        if os.path.exists(f"./software/{name}"):
+            self.is_download = True
+        else:
+            self.is_download = False
 
     def download(self, base):
         def _download():
@@ -80,6 +86,12 @@ class Software:
         frame.button = tkinter.ttk.Button(frame)
         frame.pack()
         frame.pack_propagate(False)
+
+    def ready(self, *args, **kwargs):
+        pass
+
+    def end(self, *args, **kwargs):
+        pass
 
 
 software = {

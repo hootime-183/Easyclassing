@@ -47,7 +47,7 @@ def download(url):
 
 
 class Software:
-    def __init__(self, name="Easyclassing", git_path="hootime-183/Easyclassing", version=__version__, filename=f"main_{__version__}_windows.exe",):
+    def __init__(self, frame_master, name="Easyclassing", git_path="hootime-183/Easyclassing", version=__version__, filename=f"main_{__version__}_windows.exe"):
         self.name = name
         self.git_path = git_path
         self.version = version
@@ -57,8 +57,24 @@ class Software:
         else:
             self.is_download = False
 
+        self.frame = tkinter.ttk.Frame(frame_master, height=75, width=425)
+        self.frame.name = tkinter.ttk.Label(self.frame, text=self.name, font=("微软雅黑 Light", 12))
+        self.frame.name.pack(side="top", anchor="w")
+        self.frame.version = tkinter.ttk.Label(self.frame, text=f"版本：{self.version}", font=("微软雅黑 Light", 8))
+        self.frame.version.pack(side="top", anchor="w")
+        self.frame.git_path = tkinter.ttk.Label(self.frame, text=f"Github地址：{self.git_path}", font=("微软雅黑 Light", 8))
+        self.frame.git_path.pack(side="top", anchor="w")
+        self.frame.button = tkinter.ttk.Button(self.frame)
+        self.frame.button.var = tkinter.StringVar()
+        self.frame.button["textvariable"] = self.frame.button.var
+        self.frame.button.pack(side="right")
+        self.frame.pack()
+        self.frame.pack_propagate(False)
+        self.flush_button()
+
     def download(self, base):
         def _download():
+            self.frame.button.var.set("下载中...")
             self.ready()
             print(f"{base}/{self.git_path}/releases/download/{self.version}/{self.filename}")
             res = download(f"{base}/{self.git_path}/releases/download/{self.version}/{self.filename}")
@@ -75,28 +91,17 @@ class Software:
             self.end()
         Thread(_download).start()
 
-    def get_frame(self, master):
-        frame = tkinter.ttk.Frame(master, height=75, width=425)
-        frame.name = tkinter.ttk.Label(frame, text=self.name, font=("微软雅黑 Light", 12))
-        frame.name.pack(side="top", anchor="w")
-        frame.version = tkinter.ttk.Label(frame, text=f"版本：{self.version}", font=("微软雅黑 Light", 8))
-        frame.version.pack(side="top", anchor="w")
-        frame.git_path = tkinter.ttk.Label(frame, text=f"Github地址：{self.git_path}", font=("微软雅黑 Light", 8))
-        frame.git_path.pack(side="top", anchor="w")
-        frame.button = tkinter.ttk.Button(frame)
-        frame.pack()
-        frame.pack_propagate(False)
+    def flush_button(self):
+        if self.is_download:
+            self.frame.button.var.set("启动")
+        else:
+            self.frame.button.var.set("下载")
 
     def ready(self, *args, **kwargs):
         pass
 
     def end(self, *args, **kwargs):
         pass
-
-
-software = {
-    "hmcl": Software("hmcl", "hootime-183/Easyclassing-DownloadStation", "hmcl", "hmcl.zip")
-}
 
 
 def tasklist():
@@ -107,6 +112,8 @@ def tasklist():
         if (not dir_changed) and (not exiting):
             os.popen("tasklist > tasks.txt 1>nul 2>nul")
             time.sleep(0.3)
+            _file = open("tasks.txt", "w+")
+            _file.close()
             file_in = open("tasks.txt", "r")
             tasks = file_in.read()
             if "studentmain.exe" in tasks:
@@ -513,14 +520,15 @@ class SoftwareTk(tkinter.ttk.Frame):
         self.title_label = tkinter.ttk.Label(self, text="应用商城", font=("微软雅黑 Light", 24))
         self.title_label.pack()
         self.frames = dict()
-        for i in software:
-            self.frames[i] = software[i].get_frame(self)
 
 
 main = BaseTk()
 tasklist_thread = Thread(tasklist)
 settings_thread = Thread(settings_func)
 command_line_thread = Thread(command_line)
+software = {
+    "hmcl": Software(main.frames["Software"], "hmcl", "hootime-183/Easyclassing-DownloadStation", "hmcl", "hmcl.zip")
+}
 
 
 if __name__ == '__main__':
